@@ -16,8 +16,8 @@ class BraTS2019(Dataset):
         self.transform = transform
         self.sample_list = []
 
-        train_path = self._base_dir+'/train.txt'
-        test_path = self._base_dir+'/val.txt'
+        train_path = self._base_dir + '/train.txt'
+        test_path = self._base_dir + '/val.txt'
 
         if split == 'train':
             with open(train_path, 'r') as f:
@@ -70,9 +70,9 @@ class CenterCrop(object):
         d1 = int(round((d - self.output_size[2]) / 2.))
 
         label = label[w1:w1 + self.output_size[0], h1:h1 +
-                      self.output_size[1], d1:d1 + self.output_size[2]]
+                                                      self.output_size[1], d1:d1 + self.output_size[2]]
         image = image[w1:w1 + self.output_size[0], h1:h1 +
-                      self.output_size[1], d1:d1 + self.output_size[2]]
+                                                      self.output_size[1], d1:d1 + self.output_size[2]]
 
         return {'image': image, 'label': label}
 
@@ -117,12 +117,12 @@ class RandomCrop(object):
         d1 = np.random.randint(0, d - self.output_size[2])
 
         label = label[w1:w1 + self.output_size[0], h1:h1 +
-                      self.output_size[1], d1:d1 + self.output_size[2]]
+                                                      self.output_size[1], d1:d1 + self.output_size[2]]
         image = image[w1:w1 + self.output_size[0], h1:h1 +
-                      self.output_size[1], d1:d1 + self.output_size[2]]
+                                                      self.output_size[1], d1:d1 + self.output_size[2]]
         if self.with_sdf:
             sdf = sdf[w1:w1 + self.output_size[0], h1:h1 +
-                      self.output_size[1], d1:d1 + self.output_size[2]]
+                                                      self.output_size[1], d1:d1 + self.output_size[2]]
             return {'image': image, 'label': label, 'sdf': sdf}
         else:
             return {'image': image, 'label': label}
@@ -155,7 +155,7 @@ class RandomNoise(object):
     def __call__(self, sample):
         image, label = sample['image'], sample['label']
         noise = np.clip(self.sigma * np.random.randn(
-            image.shape[0], image.shape[1], image.shape[2]), -2*self.sigma, 2*self.sigma)
+            image.shape[0], image.shape[1], image.shape[2]), -2 * self.sigma, 2 * self.sigma)
         noise = noise + self.mu
         image = image + noise
         return {'image': image, 'label': label}
@@ -227,6 +227,8 @@ def iterate_eternally(indices):
     def infinite_shuffles():
         while True:
             yield np.random.permutation(indices)
+
+    # 将多个迭代器里的值组合到一起进行迭代
     return itertools.chain.from_iterable(infinite_shuffles())
 
 

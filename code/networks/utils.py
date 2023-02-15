@@ -98,6 +98,7 @@ class unetConv2(nn.Module):
 
 class UnetConv3(nn.Module):
     def __init__(self, in_size, out_size, is_batchnorm, kernel_size=(3,3,1), padding_size=(1,1,0), init_stride=(1,1,1)):
+        # 对于z轴不做kernel
         super(UnetConv3, self).__init__()
 
         if is_batchnorm:
@@ -261,7 +262,7 @@ class UnetUp3_CT(nn.Module):
     def __init__(self, in_size, out_size, is_batchnorm=True):
         super(UnetUp3_CT, self).__init__()
         self.conv = UnetConv3(in_size + out_size, out_size, is_batchnorm, kernel_size=(3,3,3), padding_size=(1,1,1))
-        self.up = nn.Upsample(scale_factor=(2, 2, 2), mode='trilinear')
+        self.up = nn.Upsample(scale_factor=(2, 2, 2), mode='trilinear') # 三线性插值
 
         # initialise the blocks
         for m in self.children():

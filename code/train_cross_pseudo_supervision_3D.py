@@ -12,7 +12,7 @@ import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-from tensorboardX import SummaryWriter
+from torch.utils.tensorboard import SummaryWriter
 from torch.nn import BCEWithLogitsLoss
 from torch.nn.modules.loss import CrossEntropyLoss
 from torch.utils.data import DataLoader
@@ -97,19 +97,24 @@ def xavier_normal_init_weight(model):
 
 
 def train(args, snapshot_path):
+    # learning rate
     base_lr = args.base_lr
+    # path of train_data
     train_data_path = args.root_path
+    # batch_size
     batch_size = args.batch_size
     max_iterations = args.max_iterations
     num_classes = 2
-
+    # two same seg_net
     net1 = net_factory_3d(net_type=args.model, in_chns=1, class_num=num_classes).cuda()
     net2 = net_factory_3d(net_type=args.model, in_chns=1, class_num=num_classes).cuda()
+    # two different method to initialize weight
     model1 = kaiming_normal_init_weight(net1)
     model2 = xavier_normal_init_weight(net2)
     model1.train()
     model2.train()
 
+    # loading the dataset
     db_train = BraTS2019(base_dir=train_data_path,
                          split='train',
                          num=None,
@@ -127,6 +132,8 @@ def train(args, snapshot_path):
     batch_sampler = TwoStreamBatchSampler(
         labeled_idxs, unlabeled_idxs, batch_size, batch_size - args.labeled_bs)
 
+    # 获取两个数据集的部分样本，做成一个batch
+
     trainloader = DataLoader(db_train, batch_sampler=batch_sampler,
                              num_workers=4, pin_memory=True, worker_init_fn=worker_init_fn)
 
@@ -134,6 +141,7 @@ def train(args, snapshot_path):
                            momentum=0.9, weight_decay=0.0001)
     optimizer2 = optim.SGD(model2.parameters(), lr=base_lr,
                            momentum=0.9, weight_decay=0.0001)
+
     best_performance1 = 0.0
     best_performance2 = 0.0
     iter_num = 0
@@ -143,6 +151,7 @@ def train(args, snapshot_path):
     writer = SummaryWriter(snapshot_path + '/log')
     logging.info("{} iterations per epoch".format(len(trainloader)))
 
+    writer.add_graph(net1, torch.rand(1, 1, 160, 160, 80).cuda())
     max_epoch = max_iterations // len(trainloader) + 1
     iterator = tqdm(range(max_epoch), ncols=70)
     for epoch_num in iterator:
